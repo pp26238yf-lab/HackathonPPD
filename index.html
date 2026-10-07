@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f4f1e8" />
+    <meta name="description" content="人体を層ごとにめくって学べる、やさしい解剖学学習アプリ" />
+    <title>からだレイヤー｜人体をめくって学ぼう</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="メニュー画面に戻る">
+        <span class="brand-mark" aria-hidden="true">＋</span>
+        <span>からだレイヤー</span>
+      </a>
+      <nav aria-label="メインナビゲーション">
+        <button class="nav-link is-active" id="menuButton">メニュー</button>
+        <button class="nav-link" id="aboutButton">使い方</button>
+      </nav>
+      <button class="icon-button" id="soundButton" aria-label="効果音を切り替える" aria-pressed="true">
+        <span aria-hidden="true">♪</span>
+      </button>
+    </header>
+
+    <main class="entry-screen menu-screen" id="homeScreen" aria-labelledby="homeTitle">
+      <section class="entry-card">
+        <p class="entry-kicker">EXPLORE YOUR BODY</p>
+        <h1 id="homeTitle">からだを、<br /><em>知る旅へ。</em></h1>
+        <p class="entry-lead">見たいものを選んで、気軽に学び始めましょう。</p>
+        <div class="menu-options" aria-label="メニュー">
+          <button class="menu-option" id="openViewerButton" type="button">
+            <span class="menu-option-icon" aria-hidden="true">＋</span>
+            <span class="menu-option-copy"><strong>人体図を見る</strong><small>層をめくり、気になる部位を探す</small></span>
+            <span class="menu-option-arrow" aria-hidden="true">→</span>
+          </button>
+          <div class="menu-future" aria-label="今後追加するメニューの場所">
+            <span aria-hidden="true">＋</span> ほかの学習メニューは今後追加します
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <main class="entry-screen model-screen" id="modelScreen" aria-labelledby="modelTitle" hidden>
+      <section class="model-select-wrap">
+        <button class="screen-back" id="backToMenuButton" type="button">← メニューへ戻る</button>
+        <p class="entry-kicker">CHOOSE A MODEL</p>
+        <h1 id="modelTitle">どちらの人体図を見ますか？</h1>
+        <p class="entry-lead">あとから人体図の画面でも切り替えられます。</p>
+        <div class="model-options" role="group" aria-label="人体モデルを選ぶ">
+          <button class="model-option model-option--male" type="button" data-start-sex="male">
+            <span class="model-preview"><img src="assets/clothed-jp-male-front.png" alt="" /></span>
+            <span class="model-option-footer"><span><strong>男性</strong><small>男性モデルの人体図へ</small></span><span aria-hidden="true">→</span></span>
+          </button>
+          <button class="model-option model-option--female" type="button" data-start-sex="female">
+            <span class="model-preview"><img src="assets/clothed-jp-female-front.png" alt="" /></span>
+            <span class="model-option-footer"><span><strong>女性</strong><small>女性モデルの人体図へ</small></span><span aria-hidden="true">→</span></span>
+          </button>
+        </div>
+      </section>
+    </main>
+
+    <main class="app-shell" id="explorerScreen" hidden>
+      <section class="intro-panel" aria-labelledby="pageTitle">
+        <button class="screen-back explorer-back" id="changeModelButton" type="button">← 男性・女性の選択へ</button>
+        <div class="eyebrow"><span></span> EXPLORE YOUR BODY</div>
+        <h1 id="pageTitle">からだを、<br /><em>一枚ずつ</em>めくろう。</h1>
+        <p class="lead">外側から内側へ。レイヤーを切り替えて、人体のしくみを直感的に探検できます。</p>
+
+        <div class="layer-summary" aria-live="polite">
+          <div class="layer-number" id="layerNumber">01</div>
+          <div>
+            <p class="summary-kicker">いま見ているレイヤー</p>
+            <h2 id="layerTitle">服を着ている層</h2>
+            <p id="layerDescription">まずは外見からスタート。ボタンを押して、からだの内側へ進んでみよう。</p>
+          </div>
+        </div>
+
+        <div class="progress-wrap">
+          <div class="progress-label"><span>OUTSIDE</span><span>INSIDE</span></div>
+          <div class="progress-track"><div id="progressBar"></div></div>
+        </div>
+
+        <div class="desktop-tip"><span>↗</span> 図をタップすると、カードや内部構造が開きます</div>
+      </section>
+
+      <section class="viewer-panel" aria-label="人体レイヤービューアー">
+        <div class="viewer-glow"></div>
+        <div class="body-stage" id="bodyStage">
+          <div class="stage-label" id="stageLabel">CLOTHED</div>
+          <div class="sex-toggle" role="group" aria-label="人体モデルの選択">
+            <button data-body-sex="male" aria-pressed="true" class="is-active">男性</button>
+            <button data-body-sex="female" aria-pressed="false">女性</button>
+          </div>
+          <div class="view-toggle" aria-label="人体の向き">
+            <button class="is-active" data-view-side="front">正面</button>
+            <button data-view-side="back">背面</button>
+          </div>
+          <div class="network-filters is-hidden" id="networkFilters" aria-label="神経・血管・リンパの表示フィルター">
+            <button class="is-active" data-network-filter="all">すべて</button>
+            <button data-network-filter="central">中枢神経</button>
+            <button data-network-filter="peripheral">末梢神経</button>
+            <button data-network-filter="artery">動脈</button>
+            <button data-network-filter="vein">静脈</button>
+            <button data-network-filter="lymph">リンパ</button>
+          </div>
+          <section class="part-index" id="partIndex" aria-label="部位一覧" hidden>
+            <div class="part-index-heading"><h2 id="partIndexTitle">部位を探す</h2><span id="partCount" aria-live="polite"></span></div>
+            <label for="partSearch">部位名で絞り込み</label>
+            <input id="partSearch" type="search" placeholder="名前で検索" autocomplete="off" />
+            <div class="part-list" id="partList"></div>
+            <p class="part-index-note">縦にスクロールして探せます。名前を選ぶと図の赤丸が光り、横のボタンからカードを開けます。</p>
+          </section>
+          <div class="atlas-focus is-hidden" id="atlasFocusControls" role="group" aria-label="人体図の拡大">
+            <button data-atlas-focus="all" aria-pressed="true" class="is-active">全身</button>
+            <button data-atlas-focus="pelvis" aria-pressed="false">骨盤内を拡大</button>
+          </div>
+          <div class="atlas-note" id="atlasNote" aria-live="polite">男性モデル · 正面</div>
+          <div class="body-visual" id="bodyVisual" aria-live="polite"></div>
+          <div class="tap-hint" id="tapHint"><span aria-hidden="true"></span> TAP TO LEARN</div>
+          <div class="marker-legend" id="markerLegend"><span class="legend-dot"></span> カード <span class="legend-zoom"></span> 内部構造</div>
+        </div>
+
+        <button class="layer-arrow layer-arrow--out" id="outsideButton" aria-label="外側の層へ" disabled>
+          <span>←</span><small>OUTSIDE</small>
+        </button>
+        <button class="layer-arrow layer-arrow--in" id="insideButton" aria-label="内側の層へ">
+          <small>INSIDE</small><span>→</span>
+        </button>
+
+        <div class="layer-dots" id="layerDots" role="tablist" aria-label="人体の層"></div>
+      </section>
+    </main>
+
+    <dialog class="info-card" id="infoCard" aria-labelledby="cardTitle">
+      <button class="card-close" id="cardClose" aria-label="カードを閉じる">×</button>
+      <div class="card-visual" id="cardVisual"></div>
+      <div class="card-copy">
+        <p class="card-kicker" id="cardKicker">ORGAN</p>
+        <h2 id="cardTitle">組織名</h2>
+        <p id="cardText">説明は今後追加されます。</p>
+        <div class="coming-soon">実際の画像・解説へ差し替えられるカード枠です</div>
+      </div>
+    </dialog>
+
+    <dialog class="about-card" id="aboutDialog" aria-labelledby="aboutTitle">
+      <button class="card-close" id="aboutClose" aria-label="使い方を閉じる">×</button>
+      <p class="card-kicker">HOW TO USE</p>
+      <h2 id="aboutTitle">からだの探検方法</h2>
+      <ol>
+        <li>メニューの<b>人体図を見る</b>から進み、男性・女性のモデルを選びます。</li>
+        <li><b>左右の矢印</b>で、外側・内側のレイヤーへ移動します。</li>
+        <li><b>人体の光る部分</b>をタップすると、カードまたは内部構造が開きます。</li>
+        <li>下の<b>アイコン付きナビゲーション</b>から、見たい層へ直接移動できます。</li>
+        <li><b>部位一覧</b>の名前を選ぶと図の位置が点滅します。横に出るボタンからカードを開けます。内部構造を持つ臓器は、選ぶと内部構造の一覧へ進みます。</li>
+        <li><b>正面／背面</b>で、すべての全身レイヤーの向きを切り替えられます。</li>
+        <li><b>男性／女性</b>で人体モデルを切り替えます。臓器層の骨盤内拡大図と部位一覧も連動します。体型や器官の形には個人差があり、図は代表的な模式図です。</li>
+        <li>統合層では、神経・動脈・静脈・リンパを<b>個別に絞り込み</b>できます。</li>
+      </ol>
+    </dialog>
+
+    <script src="expanded-parts.js"></script>
+    <script src="anatomy-atlas.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
