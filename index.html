@@ -10,6 +10,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="card-notes.css" />
   </head>
   <body>
     <header class="topbar">
@@ -112,12 +113,8 @@
             <label for="partSearch">部位名で絞り込み</label>
             <input id="partSearch" type="search" placeholder="名前で検索" autocomplete="off" />
             <div class="part-list" id="partList"></div>
-            <p class="part-index-note">縦にスクロールして探せます。名前を選ぶと図の赤丸が光り、横のボタンからカードを開けます。</p>
+            <p class="part-index-note">名前を選ぶと図の位置と虫眼鏡が点滅します。横に出るボタンからカードか拡大図を開けます。</p>
           </section>
-          <div class="atlas-focus is-hidden" id="atlasFocusControls" role="group" aria-label="人体図の拡大">
-            <button data-atlas-focus="all" aria-pressed="true" class="is-active">全身</button>
-            <button data-atlas-focus="pelvis" aria-pressed="false">骨盤内を拡大</button>
-          </div>
           <div class="atlas-note" id="atlasNote" aria-live="polite">男性モデル · 正面</div>
           <div class="body-visual" id="bodyVisual" aria-live="polite"></div>
           <div class="tap-hint" id="tapHint"><span aria-hidden="true"></span> TAP TO LEARN</div>
@@ -155,15 +152,20 @@
         <li><b>左右の矢印</b>で、外側・内側のレイヤーへ移動します。</li>
         <li><b>人体の光る部分</b>をタップすると、カードまたは内部構造が開きます。</li>
         <li>下の<b>アイコン付きナビゲーション</b>から、見たい層へ直接移動できます。</li>
-        <li><b>部位一覧</b>の名前を選ぶと図の位置が点滅します。横に出るボタンからカードを開けます。内部構造を持つ臓器は、選ぶと内部構造の一覧へ進みます。</li>
+        <li><b>部位一覧</b>の名前を選ぶと図の位置が点滅します。横に出る「カードを開く」または「拡大する」で次へ進みます。拡大図の中では内部構造の一覧から部位を選べます。</li>
         <li><b>正面／背面</b>で、すべての全身レイヤーの向きを切り替えられます。</li>
         <li><b>男性／女性</b>で人体モデルを切り替えます。臓器層の骨盤内拡大図と部位一覧も連動します。体型や器官の形には個人差があり、図は代表的な模式図です。</li>
         <li>統合層では、神経・動脈・静脈・リンパを<b>個別に絞り込み</b>できます。</li>
+        <li>カードの<b>メモに移動</b>で裏面へ切り替わります。メモはカード別に、このブラウザーへ自動保存されます。</li>
       </ol>
     </dialog>
 
     <script src="expanded-parts.js"></script>
     <script src="anatomy-atlas.js"></script>
+    <script src="full-body-illustrations.js"></script>
+    <script src="detail-illustrations.js"></script>
+    <script src="card-images.js"></script>
+    <script src="card-notes.js"></script>
     <script src="app.js"></script>
   </body>
 </html>

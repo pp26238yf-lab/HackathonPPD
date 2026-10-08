@@ -81,11 +81,12 @@ function atlasBodyOutline(sex) {
     L351 353 381 454Q369 468 373 479L385 507Q391 513 392 506L387 485 398 506Q405 511 404 503L396 480 409 498Q416 501 414 493L404 471 419 484Q425 486 423 478L410 460Q406 449 397 438L373 335 ${500-s+24} 235Q${500-s+15} 204 ${500-s} 201Q288 188 270 177L269 149Z`;
 }
 
-function atlasSVG(layerId, side, sex) {
+function atlasSVG(layerId, side, sex, focus="all") {
+  if (layerId === "bone") return realisticBoneSVG(side, sex);
   const female = sex === "female", back = side === "back";
   const parts = [];
   const name = key => atlasNames[key] || items[key]?.title || key;
-  const attr = (key, opt={}) => `class="hotspot atlas-hotspot" tabindex="0" data-item="${key}" data-label="${name(key)}" data-type="${layerId.toUpperCase()}" data-color="${opt.color || '#c87970'}"${opt.system ? ` data-system="${opt.system}"` : ''}${opt.deep || expandedParts.muscle.some(p => p[0] === key && p[7]) ? ' data-deep="true"' : ''}`;
+  const attr = (key, opt={}) => `class="hotspot atlas-hotspot" tabindex="0" data-item="${key}" data-label="${name(key)}" data-type="${layerId.toUpperCase()}" data-color="${opt.color || '#c87970'}"${opt.system ? ` data-system="${opt.system}"` : ''}${opt.zoom ? ` data-zoom="${opt.zoom}"` : ''}${opt.deep || expandedParts.muscle.some(p => p[0] === key && p[7]) ? ' data-deep="true"' : ''}`;
   const add = (key, x, y, shape="", opt={}) => { parts.push({key,x,y,opt}); return shape ? `<g ${attr(key,opt)}>${shape}</g>` : ""; };
   const path = (d, fill, stroke="#75675e", width=1.5, extra="") => `<path d="${d}" fill="${fill}" stroke="${stroke}" stroke-width="${width}" stroke-linecap="round" stroke-linejoin="round" ${extra}/>`;
   const ellipse = (x,y,rx,ry,fill,stroke="#75675e") => `<ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${ry}" fill="${fill}" stroke="${stroke}" stroke-width="1.5"/>`;
@@ -237,7 +238,9 @@ function atlasSVG(layerId, side, sex) {
     }
     drawing += organ("urinary_bladder",path("M229 514q19-15 39 0l-6 23q-14 12-27 0z","#e3c586","#b7a06c",1.7));
     // These small pelvic diagrams depict the selected model only.
+    drawing += '<g data-highlight-group="pelvic_reproductive">';
     if (!back) drawing += female ? organ("uterus",path("M237 532q13-8 26 0l-13 26z","#c98d9a"))+organ("ovary",ellipse(218,535,7,4,"#dcb66f")+ellipse(282,535,7,4,"#dcb66f"))+organ("uterine_tube",path("M239 534q-10-18-19-2m41 2q10-18 19-2","none","#c98d9a",3))+organ("vagina",path("M246 554h8v21h-8z","#ce96a4")) : organ("prostate",ellipse(250,541,12,8,"#a792b5"))+organ("testis",ellipse(239,575,7,10,"#dcb66f")+ellipse(261,575,7,10,"#dcb66f"))+organ("ductus_deferens",mirror(path("M238 565q-30-47 0-42","none","#b29b80",3)))+organ("penis",path("M246 550h8v33h-8z","#d1a790"));
+    drawing += '</g>';
     const organPoints = back ? [["brain",254,76],["lungs",192,276],["kidney",203,424],["adrenal_glands",204,389],["spleen",183,371],["ureters_outer",271,473],["urinary_bladder",244,521]] : atlasOrganPoints;
     drawing += '</g>';
     organPoints.forEach(([key,x,y])=>add(key,x,y>=348 ? 105+y*.7 : y));
@@ -245,7 +248,9 @@ function atlasSVG(layerId, side, sex) {
       const breastColor=female?"#cfa0b3":"#d6c0bd";
       drawing += organ("mammary_gland",ellipse(329,280,female?13:6,female?18:8,breastColor,"#a78a96"));
     }
-    // Enlarged, sex-specific pelvic inset; explicitly not a second body layer.
+    // Keep the inset markup separate from the full body so its zoom never contains hands.
+    const bodyDrawing = drawing;
+    const bodyPartCount = parts.length;
     drawing += `<g class="pelvic-inset"><path d="M282 546L342 577" fill="none" stroke="#8a9e98" stroke-dasharray="3 4"/><rect x="338" y="559" width="155" height="224" rx="14" fill="#fffdf6" stroke="#baccc2"/>
       <text x="350" y="580" class="atlas-inset-title">${female?"女性":"男性"}の骨盤内・生殖器</text><text x="350" y="597" class="atlas-small">正面の拡大模式図 · タップして確認</text></g>`;
     if (female) {
@@ -267,6 +272,14 @@ function atlasSVG(layerId, side, sex) {
       drawing += add("testis",389,745,ellipse(389,745,12,16,"#e1bd76")+ellipse(447,745,12,16,"#e1bd76"));
       drawing += add("epididymis",459,728,path("M454 726q13 4 7 29","none","#a5b4a1",5));
       drawing += `<text x="347" y="777" class="atlas-small">前立腺・精巣・精管など</text>`;
+    }
+    if (focus === "pelvis") {
+      drawing = drawing.slice(bodyDrawing.length).replace('<path d="M282 546L342 577" fill="none" stroke="#8a9e98" stroke-dasharray="3 4"/>', "");
+      parts.splice(0, bodyPartCount);
+    } else {
+      drawing = bodyDrawing;
+      parts.splice(bodyPartCount);
+      add("pelvic_reproductive",280,510,"",{zoom:"pelvis",color:"#c98d9a"});
     }
   }
 
@@ -296,9 +309,10 @@ function atlasSVG(layerId, side, sex) {
     }
   }
 
-  const markers=parts.map(({key,x,y,opt})=>`<g ${attr(key,opt)}><circle cx="${x}" cy="${y}" r="11" fill="transparent"/>${items[key]?.internal ? magnifier(x,y) : `<circle class="hotspot-dot" cx="${x}" cy="${y}" r="4.8"/>`}</g>`).join("");
+  if (layerId === "skin" || (layerId === "organ" && focus !== "pelvis")) return realisticLayerSVG(layerId, side, sex, parts);
+  const markers=parts.map(({key,x,y,opt})=>`<g ${attr(key,opt)}><circle cx="${x}" cy="${y}" r="11" fill="transparent"/>${items[key]?.internal || opt.zoom ? magnifier(x,y) : `<circle class="hotspot-dot" cx="${x}" cy="${y}" r="4.8"/>`}</g>`).join("");
   const label=`${female?"女性":"男性"}・${back?"背面":"正面"}・${layers.find(l=>l.id===layerId).title}`;
-  return `<svg class="anatomy-atlas" viewBox="0 0 500 960" role="img" aria-label="${label}" data-sex="${sex}" data-side="${side}">
+  return `<svg class="anatomy-atlas" viewBox="${focus === "pelvis" && layerId === "organ" ? "330 550 170 245" : "0 0 500 960"}" role="img" aria-label="${label}${focus === "pelvis" ? "・骨盤内拡大" : ""}" data-sex="${sex}" data-side="${side}">
     <text x="250" y="22" text-anchor="middle" class="atlas-heading">${female?"FEMALE":"MALE"} / ${back?"POSTERIOR":"ANTERIOR"}</text>
     ${drawing}${markers}
     <text x="250" y="929" text-anchor="middle" class="atlas-caption">${female?"女性":"男性"}モデル · ${back?"背面":"正面"} · 学習用模式図</text>

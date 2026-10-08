@@ -270,6 +270,14 @@ dialog::backdrop { background:rgba(14,38,39,.48); backdrop-filter:blur(5px); }
 .hotspot.is-index-selected { filter:drop-shadow(0 0 8px #e8433e); }
 .hotspot.is-index-selected .locate-halo { opacity:1; animation:part-locate-ring 1.25s ease-in-out infinite; }
 .hotspot.is-index-selected .hotspot-dot { fill:#d5292e; stroke:#fff; stroke-width:3; animation:part-locate-dot 1.25s ease-in-out infinite; }
+/* Selection changes the anatomical shape as well as the marker; zoom remains a second action. */
+.anatomy-atlas .is-index-selected :is(path, ellipse, circle, rect):not(.hotspot-dot):not(.locate-halo):not(.badge):not(.lens):not([fill="none"]):not([fill="transparent"]) { animation:selected-organ-flash 1.4s ease-in-out infinite; }
+.anatomy-atlas .is-index-selected path[fill="none"]:not(.lens) { animation:selected-organ-stroke 1.4s ease-in-out infinite; }
+.hotspot.is-index-selected .magnifier-marker { animation:selected-zoom-pulse 1.15s ease-in-out infinite; }
+.hotspot.is-index-selected .magnifier-marker .badge { fill:#e22c39; stroke:#fff5cd; stroke-width:3; }
+@keyframes selected-organ-flash { 0%,100% { fill:#ff5e67; } 50% { fill:#ffd052; } }
+@keyframes selected-organ-stroke { 0%,100% { stroke:#ff5e67; } 50% { stroke:#ffd052; } }
+@keyframes selected-zoom-pulse { 50% { filter:drop-shadow(0 0 10px #e22c39); opacity:.72; } }
 @keyframes part-locate-ring { 0%,100% { opacity:1; transform:scale(.8); } 50% { opacity:.5; transform:scale(1.45); } }
 @keyframes part-locate-dot { 0%,100% { opacity:1; } 50% { opacity:.65; } }
 @media (min-width:861px) and (max-width:960px) {
@@ -298,6 +306,33 @@ dialog::backdrop { background:rgba(14,38,39,.48); backdrop-filter:blur(5px); }
   .body-stage:has(.part-index[hidden]) .body-visual { left:0; top:133px; }
   .marker-legend, .body-stage:has(.atlas-focus:not(.is-hidden)) .marker-legend { left:calc(var(--part-rail-width) + 8px); top:151px; }
   .layer-arrow { bottom:76px; }
+}
+
+/* Keep the original clothed images entirely inside a viewport-sized stage. */
+.viewer-panel:has(.clothed-person) { min-height:0; padding-block:16px; }
+.body-stage:has(.clothed-person) { height:clamp(460px, calc(100svh - 112px), 900px); min-height:0; max-height:none; }
+.body-stage:has(.clothed-person) .body-visual { display:block; inset:120px 16px 92px; width:auto; min-width:0; min-height:0; }
+.body-stage .body-visual .clothed-person { position:absolute; inset:0; display:block; width:100%; height:100%; min-width:0; min-height:0; max-width:100%; max-height:100%; object-fit:contain; object-position:center; }
+
+/* Raster medical plates and their registered interactive markers share one viewBox. */
+.detail-atlas { background:#fbfaf5; border-radius:18px; }
+.detail-title { fill:#173a3c; font:700 30px "Noto Sans JP",sans-serif; }
+.detail-caption { fill:#607c76; font:400 19px "Noto Sans JP",sans-serif; }
+.detail-region { fill:#f65e61; opacity:0; pointer-events:none; }
+.detail-hotspot:hover, .detail-hotspot:focus { transform:none; }
+.detail-hotspot .hotspot-dot { stroke-width:5; }
+.detail-hotspot.is-index-selected .hotspot-dot { stroke-width:6; }
+.detail-hotspot .locate-halo { fill:none; stroke-width:6; }
+.detail-hotspot.is-index-selected .detail-region { animation:detail-region-flash 1.4s ease-in-out infinite; }
+@keyframes detail-region-flash { 0%,100% { opacity:.25; fill:#f65e61; } 50% { opacity:.4; fill:#ffd052; } }
+
+.realistic-full-body { background:#fbfaf5; border-radius:18px; }
+.body-visual .realistic-full-body > svg { width:500px; height:1000px; overflow:hidden; }
+.realistic-full-body .full-body-region { fill:#ff5b55; opacity:0; pointer-events:none; }
+.realistic-full-body .is-index-selected .full-body-region { animation:detail-region-flash 1.4s ease-in-out infinite !important; stroke:#fff5ce; stroke-width:2; }
+.realistic-full-body .hotspot { transform:none !important; }
+@media (prefers-reduced-motion:reduce) {
+  .realistic-full-body .is-index-selected .full-body-region { animation:none !important; opacity:.35; }
 }
 
 /* Entry flow: menu -> model selection -> explorer. */

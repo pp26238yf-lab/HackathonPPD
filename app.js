@@ -39,6 +39,7 @@ const items = {
   liver: { title:"肝臓", type:"ORGAN", color:"#97483b", text:"肝臓についての詳しい画像・説明を、ここに追加できるカードです。" },
   stomach: { title:"胃", type:"ORGAN", color:"#e9a989", text:"胃についての詳しい画像・説明を、ここに追加できるカードです。" },
   kidney: { title:"腎臓", type:"ORGAN / INTERNAL LAYER", color:"#9b453b", internal:true },
+  pelvic_reproductive: { title:"骨盤内生殖器", type:"ORGAN / ENLARGED VIEW", color:"#c98d9a", zoom:"pelvis" },
   intestine: { title:"腸", type:"ORGAN", color:"#d99a7d", text:"腸についての詳しい画像・説明を、ここに追加できるカードです。" }
 };
 
@@ -395,12 +396,11 @@ function renderBody() {
   bodyVisual.classList.add("is-changing");
   clearTimeout(renderTimer);
   renderTimer = setTimeout(() => {
-    if (layer.id === "internal") bodyVisual.innerHTML = internalSVG(internalItem);
+    if (layer.id === "internal") bodyVisual.innerHTML = realisticDetailSVG(internalItem);
     else if (layer.id === "clothed") {
       const imagePath = `assets/clothed-jp-${bodySex}-${viewSide}.png`;
       bodyVisual.innerHTML = `<img class="clothed-person" src="${imagePath}" alt="${bodySex === "female" ? "女性" : "男性"}モデルの${viewSide === "front" ? "正面" : "背面"}・服を着た全身像">`;
-    } else bodyVisual.innerHTML = atlasSVG(layer.id, viewSide, bodySex);
-    if (layer.id === "organ" && atlasFocus === "pelvis") bodyVisual.querySelector("svg").setAttribute("viewBox", "330 550 170 245");
+    } else bodyVisual.innerHTML = atlasSVG(layer.id, viewSide, bodySex, layer.id === "organ" ? atlasFocus : "all");
     bodyVisual.classList.remove("is-changing");
     bindHotspots();
     applyNetworkFilter();
@@ -411,13 +411,11 @@ function renderBody() {
   document.querySelector("#layerTitle").textContent = layer.title;
   document.querySelector("#layerDescription").textContent = layer.description;
   document.querySelector("#stageLabel").textContent = `${layer.en}${internalItem ? "" : ` · ${bodySex.toUpperCase()} · ${viewSide.toUpperCase()}`}`;
-  document.querySelector("#atlasNote").textContent = internalItem ? `${bodySex === "female" ? "女性" : "男性"}モデルから表示中` : `${bodySex === "female" ? "女性" : "男性"}モデル · ${viewSide === "front" ? "正面" : "背面"}${layer.id === "organ" ? (atlasFocus === "pelvis" ? " · 骨盤内の正面模式図を拡大中" : " · 骨盤内は右の拡大図でも確認できます") : ""}`;
-  document.querySelector("#atlasFocusControls").classList.toggle("is-hidden", layer.id !== "organ");
-  document.querySelectorAll("[data-atlas-focus]").forEach(button => {
-    const active = button.dataset.atlasFocus === atlasFocus;
-    button.classList.toggle("is-active", active);
-    button.setAttribute("aria-pressed", String(active));
-  });
+  document.querySelector("#atlasNote").textContent = internalItem ? `${bodySex === "female" ? "女性" : "男性"}モデルから表示中` : `${bodySex === "female" ? "女性" : "男性"}モデル · ${viewSide === "front" ? "正面" : "背面"}${layer.id === "organ" ? (atlasFocus === "pelvis" ? " · 骨盤内の正面模式図を拡大中" : " · 骨盤部の虫眼鏡で生殖器を拡大できます") : ""}`;
+  const isPelvicZoom = layer.id === "organ" && atlasFocus === "pelvis";
+  const isDetail = Boolean(internalItem) || isPelvicZoom;
+  document.querySelector("#outsideButton").setAttribute("aria-label", isDetail ? "全身に戻る" : "外側の層へ");
+  document.querySelector("#outsideButton small").textContent = isDetail ? "全身に戻る" : "OUTSIDE";
   document.querySelectorAll("[data-body-sex]").forEach(button => {
     const active = button.dataset.bodySex === bodySex;
     button.classList.toggle("is-active", active);
@@ -428,7 +426,7 @@ function renderBody() {
   document.querySelector("#insideButton").disabled = Boolean(internalItem) || currentLayer === layers.length - 1;
   document.querySelector("#tapHint").classList.toggle("is-hidden", currentLayer === 0 || Boolean(internalItem));
   document.querySelector("#markerLegend").classList.toggle("is-hidden", currentLayer === 0 || Boolean(internalItem));
-  document.querySelector(".view-toggle").classList.toggle("is-hidden", Boolean(internalItem));
+  document.querySelector(".view-toggle").classList.toggle("is-hidden", isDetail);
   document.querySelector("#networkFilters").classList.toggle("is-hidden", layer.id !== "network");
   document.querySelectorAll("[data-view-side]").forEach(button => { button.classList.toggle("is-active", button.dataset.viewSide === viewSide); button.setAttribute("aria-pressed", String(button.dataset.viewSide === viewSide)); });
   document.querySelectorAll("[data-network-filter]").forEach(button => button.classList.toggle("is-active", button.dataset.networkFilter === networkFilter));
@@ -490,24 +488,19 @@ function updatePartIndex() {
     button.dataset.item = node.dataset.item;
     button.title = label;
     button.textContent = label;
-    if (items[node.dataset.item]?.internal || node.dataset.deep === "true") {
+    if (items[node.dataset.item]?.internal || node.dataset.zoom || node.dataset.deep === "true") {
       const hint = document.createElement("small");
-      hint.textContent = items[node.dataset.item]?.internal ? "内部構造へ" : "深部の筋";
+      hint.textContent = items[node.dataset.item]?.internal ? "内部構造へ" : node.dataset.zoom ? "拡大図へ" : "深部の筋";
       button.append(hint);
     }
     const entry = document.createElement("div");
     entry.className = "part-entry";
     button.setAttribute("aria-pressed", String(selectedPartKey === node.dataset.item));
     button.addEventListener("click", () => {
-      if (!internalItem && items[node.dataset.item]?.internal) {
-        document.querySelector("#partSearch").value = "";
-        openInternal(node.dataset.item);
-        return;
-      }
       selectedPartKey = node.dataset.item;
-      bodyVisual.querySelectorAll(".hotspot.is-index-selected").forEach(target => target.classList.remove("is-index-selected"));
-      bodyVisual.querySelectorAll(".hotspot").forEach(target => {
-        if (target.dataset.item === selectedPartKey) target.classList.add("is-index-selected");
+      bodyVisual.querySelectorAll(".is-index-selected").forEach(target => target.classList.remove("is-index-selected"));
+      bodyVisual.querySelectorAll(".hotspot, [data-highlight-group]").forEach(target => {
+        if ((target.dataset.highlightGroup || target.dataset.item) === selectedPartKey) target.classList.add("is-index-selected");
       });
       list.querySelectorAll(".part-entry").forEach(row => row.classList.toggle("is-selected", row.dataset.item === selectedPartKey));
       list.querySelectorAll(".part-button").forEach(item => item.setAttribute("aria-pressed", String(item === button)));
@@ -516,14 +509,23 @@ function updatePartIndex() {
     });
     entry.dataset.item = node.dataset.item;
     entry.append(button);
-    if (!items[node.dataset.item]?.internal || internalItem) {
-      const open = document.createElement("button");
-      open.className = "part-open";
-      open.textContent = "カードを開く";
-      open.setAttribute("aria-label", `${label}のカードを開く`);
-      open.addEventListener("click", () => openCard(node));
-      entry.append(open);
-    }
+    const open = document.createElement("button");
+    open.className = "part-open";
+    const canZoom = !internalItem && (items[node.dataset.item]?.internal || node.dataset.zoom);
+    open.textContent = canZoom ? "拡大する" : "カードを開く";
+    open.setAttribute("aria-label", `${label}を${canZoom ? "拡大する" : "カードで開く"}`);
+    open.addEventListener("click", () => {
+      if (node.dataset.zoom === "pelvis") {
+        atlasFocus = "pelvis";
+        document.querySelector("#partSearch").value = "";
+        clickSound();
+        renderBody();
+      } else if (!internalItem && items[node.dataset.item]?.internal) {
+        document.querySelector("#partSearch").value = "";
+        openInternal(node.dataset.item);
+      } else openCard(node);
+    });
+    entry.append(open);
     list.append(entry);
   });
   document.querySelector("#partCount").textContent = `${internalItem ? items[internalItem].title : `${bodySex === "female" ? "女性" : "男性"}・${viewSide === "front" ? "正面" : "背面"}`} ${shown} / ${unique.size}部位`;
@@ -549,6 +551,14 @@ function updateOrganChips() {
 function moveLayer(delta) {
   if (internalItem && delta < 0) {
     internalItem = null;
+    document.querySelector("#partSearch").value = "";
+    clickSound();
+    renderBody();
+    return;
+  }
+  if (delta < 0 && layers[currentLayer].id === "organ" && atlasFocus === "pelvis") {
+    atlasFocus = "all";
+    document.querySelector("#partSearch").value = "";
     clickSound();
     renderBody();
     return;
@@ -562,14 +572,26 @@ function moveLayer(delta) {
 }
 
 function bindHotspots() {
-  document.querySelectorAll(".hotspot").forEach(node => {
+  bodyVisual.querySelectorAll(".hotspot").forEach(node => {
+    if (internalItem && !node.querySelector(".hotspot-dot")) {
+      const shape = node.querySelector("path, rect, ellipse, circle");
+      if (shape) {
+        const box = shape.getBBox();
+        const dot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        dot.setAttribute("class", "hotspot-dot");
+        dot.setAttribute("cx", String(box.x + box.width / 2));
+        dot.setAttribute("cy", String(box.y + box.height / 2));
+        dot.setAttribute("r", "5");
+        node.append(dot);
+      }
+    }
     const dot = node.querySelector(".hotspot-dot");
     if (dot && !node.querySelector(".locate-halo")) {
       const halo = document.createElementNS("http://www.w3.org/2000/svg", "circle");
       halo.setAttribute("class", "locate-halo");
       halo.setAttribute("cx", dot.getAttribute("cx"));
       halo.setAttribute("cy", dot.getAttribute("cy"));
-      halo.setAttribute("r", "18");
+      halo.setAttribute("r", String(Math.max(18, Number(dot.getAttribute("r")) * 3.6)));
       dot.before(halo);
     }
     const outerItem = items[node.dataset.item];
@@ -580,7 +602,7 @@ function bindHotspots() {
       node.prepend(title);
     }
     node.setAttribute("role", "button");
-    node.setAttribute("aria-label", outerItem?.internal && !internalItem ? `${label}の内部構造を見る` : `${label}のカードを見る`);
+    node.setAttribute("aria-label", node.dataset.zoom === "pelvis" ? `${label}を拡大する` : outerItem?.internal && !internalItem ? `${label}の内部構造を見る` : `${label}のカードを見る`);
     node.addEventListener("click", () => activateHotspot(node));
     node.addEventListener("keydown", e => {
       if (e.key === "Enter" || e.key === " ") {
@@ -593,6 +615,12 @@ function bindHotspots() {
 
 function activateHotspot(node) {
   const key = node.dataset.item;
+  if (node.dataset.zoom === "pelvis") {
+    atlasFocus = "pelvis";
+    clickSound();
+    renderBody();
+    return;
+  }
   if (!internalItem && items[key]?.internal) {
     openInternal(key);
     return;
@@ -614,11 +642,7 @@ function openCard(source) {
     text: `${source.dataset.label || "この部位"}の画像と説明を追加するためのカード枠です。`
   };
   clickSound();
-  document.querySelector("#cardKicker").textContent = item.type;
-  document.querySelector("#cardTitle").textContent = item.title;
-  document.querySelector("#cardText").textContent = item.text || `${item.title}の画像と説明を追加するためのカード枠です。`;
-  document.querySelector("#cardVisual").innerHTML = miniIllustration(item);
-  infoCard.showModal();
+  showStudyCard(key, source.dataset.label || item.title);
 }
 
 function openInternal(key) {
@@ -667,10 +691,6 @@ document.querySelectorAll("[data-body-sex]").forEach(button => button.addEventLi
   if (infoCard.open) infoCard.close();
   document.querySelector("#partSearch").value = "";
   clickSound();
-  renderBody();
-}));
-document.querySelectorAll("[data-atlas-focus]").forEach(button => button.addEventListener("click", () => {
-  atlasFocus = button.dataset.atlasFocus;
   renderBody();
 }));
 document.querySelectorAll("[data-network-filter]").forEach(button => button.addEventListener("click", () => {

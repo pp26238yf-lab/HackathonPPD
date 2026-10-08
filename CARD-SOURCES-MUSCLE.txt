@@ -1,0 +1,25 @@
+からだの図鑑：筋肉・腱44項目
+
+制作：内蔵 image_gen。添付カードを全画像の配置・色・書体の共通参照として使用。
+原稿：card-data.json。生成の共通指示：generation-template.txt。
+対象：一般の大学生向けの解剖学習。各種目は対象筋が関与する例で、単一筋を完全に分離して鍛える意味ではありません。
+顔まわり5項目は、一般向けの筋力向上法として裏付けを確認できなかったため、ユーザーの指示に従い「動きの紹介」としました。治療用の訓練とは区別しています。
+アキレス腱は筋肉ではなく腱です。カーフレイズによって筋肉の力を介して腱へ負荷をかける例を掲載しています。
+
+参照資料（解剖の位置・作用、運動選定の照合）
+OpenStax Anatomy and Physiology 2e: https://openstax.org/books/anatomy-and-physiology-2e/pages/11-3-axial-muscles-of-the-head-neck-and-back
+ACE Exercise Library: https://www.acefitness.org/resources/everyone/exercise-library/
+AAOS shoulder conditioning: https://www.orthoinfo.org/recovery/rotator-cuff-and-shoulder-conditioning-program/
+AAOS spine conditioning: https://www.orthoinfo.org/recovery/spine-conditioning-program/
+AAOS foot and ankle conditioning: https://www.orthoinfo.org/recovery/foot-and-ankle-conditioning-program
+NHS neck isometric exercise: https://msk-bexley.nhs.uk/conditions/neck-pain/cervical-radiculopathy
+NHS facial exercise scope: https://www.uhs.nhs.uk/departments/brain-spine-and-nerves/wessex-neurological-centre/neurology/the-face-place/facial-exercise-videos
+NHS temporomandibular disorder: https://www.nhs.uk/conditions/temporomandibular-disorder-tmd/
+NHS Achilles loading: https://www.berkshirehealthcare.nhs.uk/advice/achilles-tendinopathy
+NCBI brachioradialis: https://www.ncbi.nlm.nih.gov/books/NBK526110/
+NCBI brachialis: https://www.ncbi.nlm.nih.gov/books/NBK551630/
+NCBI femoral muscles: https://www.ncbi.nlm.nih.gov/books/NBK500008/
+NCBI foot muscles: https://www.ncbi.nlm.nih.gov/books/NBK539705/
+
+本セットの図は生成画像による模式図です。資料との照合と目視確認、および図の修正を行いました。ただし、生成図版の細部まで医学的な正確性を確定した教材完成版ではありません。確認用として保存しています。専門家による医学監修は未実施です。
+
